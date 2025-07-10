@@ -1,0 +1,224 @@
+A_Block_CORE_SW
+--------------
+no
+en
+config t
+
+host A_Block_CORE_SW
+
+int fa 0/1
+no switchport
+ip add 10.0.0.1 255.0.0.0
+ip helper-address 172.16.0.20
+exit
+
+int fa 0/2
+no switchport
+ip add 20.0.0.1 255.0.0.0
+ip helper-address 172.16.0.20
+exit
+
+int fa 0/3
+no switchport
+ip add 50.0.0.1 255.0.0.0
+exit
+
+int ra fa 0/4 -5
+channel-group 5 mode active
+
+int port-channel 5
+no switchport
+ip add 70.0.0.1 255.0.0.0
+no sh
+exit
+
+ip routing 
+
+router rip
+version 2
+network 10.0.0.0
+network 20.0.0.0
+network 50.0.0.0
+
+B_Block_CORE_SW
+--------------
+en
+config t
+
+host B_Block_CORE_SW
+
+int fa 0/1
+no switchport
+ip add 30.0.0.1 255.0.0.0
+ip helper-address 172.16.0.20
+exit
+
+int fa 0/2
+no switchport
+ip add 40.0.0.1 255.0.0.0
+ip helper-address 172.16.0.20
+exit
+
+int fa 0/3
+no switchport
+ip add 60.0.0.1 255.0.0.0
+exit
+
+int ra fa 0/4 -5
+channel-group 5 mode passive
+
+int port-channel 5
+no switchport
+ip add 70.0.0.2 255.0.0.0
+no sh
+exit
+
+ip  routing
+
+router rip
+version 2
+network 30.0.0.0
+network 40.0.0.0
+network 60.0.0.0
+
+Edge_Router_1
+-------
+
+enable
+config t
+
+hostname Edge_Router_1
+
+int fa	0/0
+ip add 50.0.0.2 255.0.0.0
+no sh
+exit
+
+int fa 0/1
+ip add 60.0.0.2 255.0.0.0
+no sh
+exit
+
+int eth 1/0
+ip add 90.0.0.1 255.0.0.0
+no sh
+exit
+
+router rip
+version 2
+network 50.0.0.0 
+network 60.0.0.0
+network 90.0.0.0
+exit
+===============================================================
+
+Edge_Router_2
+-------
+
+
+enable
+config t
+
+hostname Edge_Router_2
+
+int fa	0/0
+ip add 90.0.0.2 255.0.0.0
+no sh
+exit
+
+int fa 0/1
+ip add 100.0.0.4 255.0.0.0
+no sh
+exit
+
+router ospf 1
+router-id 4.4.4.4
+network 100.0.0.0 0.255.255.255 area 1
+exit
+
+router rip
+version 2
+network 90.0.0.0
+exit
+
+
+router ospf 1
+ router-id 4.4.4.4
+ redistribute rip metric 1 subnets 
+exit
+!
+router rip
+ version 2
+ redistribute ospf 1 metric 1 
+ 
+DC_R3
+------
+
+enable
+config t
+
+hostname DC_R3
+
+int fa 0/0
+ip add 100.0.0.3 255.0.0.0
+no sh
+exit
+
+int fa	0/1
+ip add 110.0.0.1 255.0.0.0
+no sh
+exit
+
+router ospf 1
+router-id 3.3.3.3
+network 100.0.0.0 0.255.255.255 area 1
+network 110.0.0.0 0.255.255.255 area 1
+exit
+
+DC_R2
+------
+
+enable
+config t
+
+hostname DC_R2
+
+int fa 0/0
+ip add 100.0.0.2 255.0.0.0
+no sh
+exit
+
+int fa	0/1
+ip add 172.16.0.1 255.255.0.0
+no sh
+exit
+
+router ospf 1
+router-id 2.2.2.2
+network 100.0.0.0 0.255.255.255 area 1
+network 172.16.0.0 0.0.255.255 area 1
+exit
+
+DC_R1
+------
+
+enable
+config t
+
+hostname DC_R1
+
+int fa 0/0
+ip add 100.0.0.1 255.0.0.0
+no sh
+exit
+
+int fa	0/1
+ip add 192.168.1.1 255.255.255.0
+no sh
+exit
+
+router ospf 1
+router-id 1.1.1.1
+network 100.0.0.0 0.255.255.255 area 1
+network 192.168.1.0 0.0.0.255 area 1
+exit
